@@ -1,4 +1,4 @@
-package com.example.mcp.mcp;
+package com.example.mcp.server;
 
 import com.example.mcp.service.ForwardService;
 import org.springframework.ai.tool.ToolCallbackProvider;

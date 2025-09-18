@@ -1,4 +1,4 @@
-package com.example.mcp.mcp;
+package com.example.mcp.server;
 
 import com.example.mcp.model.StandardQueryRequest;
 import com.example.mcp.model.StandardQueryResponse;
