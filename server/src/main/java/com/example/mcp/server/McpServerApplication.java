@@ -1,6 +1,5 @@
 package com.example.mcp.server;
 
-import com.example.mcp.service.ForwardService;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.boot.SpringApplication;
@@ -9,6 +8,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 // import removed
 import org.springframework.context.annotation.Bean;
+
+import com.example.mcp.service.ForwardService;
 
 @SpringBootApplication(scanBasePackages = "com.example.mcp")
 @ConfigurationPropertiesScan

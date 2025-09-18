@@ -9,6 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.reactive.function.client.WebClient;
+
 import reactor.netty.http.client.HttpClient;
 import reactor.core.publisher.Mono;
 
@@ -44,7 +45,7 @@ class ClientCallsServerIT {
         assertThat(health).isNotNull();
         assertThat(health).contains("status");
 
-        // 也尝试直连 server 的 SSE 端点检查连通性（返回 200 即可）
+        // 直连 server 的 SSE 端点检查：返回 200 且为 text/event-stream，并可读取至少一条事件
         Integer code = HttpClient.create()
             .baseUrl("http://localhost:8080")
             .headers(h -> h.add("Accept", MediaType.TEXT_EVENT_STREAM_VALUE))
@@ -53,6 +54,30 @@ class ClientCallsServerIT {
             .responseSingle((res, buf) -> Mono.just(res.status().code()))
             .block(Duration.ofSeconds(5));
         assertThat(code).isBetween(200, 204);
+
+        String contentType = HttpClient.create()
+            .baseUrl("http://localhost:8080")
+            .headers(h -> h.add("Accept", MediaType.TEXT_EVENT_STREAM_VALUE))
+            .get()
+            .uri("/sse")
+            .responseSingle((res, buf) -> Mono.justOrEmpty(res.responseHeaders().get("Content-Type")))
+            .block(Duration.ofSeconds(5));
+        assertThat(contentType).isNotNull();
+        assertThat(contentType).contains("text/event-stream");
+
+        String firstEvent = HttpClient.create()
+            .baseUrl("http://localhost:8080")
+            .headers(h -> h.add("Accept", MediaType.TEXT_EVENT_STREAM_VALUE))
+            .get()
+            .uri("/sse")
+            .response((res, content) -> {
+                if (res.status().code() < 200 || res.status().code() >= 300) {
+                    return Mono.error(new IllegalStateException("SSE status=" + res.status().code()));
+                }
+                return content.asString().filter(s -> !s.isBlank()).take(1).singleOrEmpty();
+            })
+            .blockFirst(Duration.ofSeconds(10));
+        assertThat(firstEvent).isNotNull();
     }
 }
 
