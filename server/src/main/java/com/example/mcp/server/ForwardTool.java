@@ -1,6 +1,7 @@
 package com.example.mcp.server;
 
 import org.springframework.ai.tool.annotation.Tool;
+import org.springframework.stereotype.Service;
 
 import com.example.mcp.model.StandardQueryRequest;
 import com.example.mcp.model.StandardQueryResponse;
@@ -8,6 +9,7 @@ import com.example.mcp.service.ForwardService;
 
 import reactor.core.publisher.Flux;
 
+@Service
 public class ForwardTool {
     private final ForwardService forwardService;
 
@@ -25,5 +27,3 @@ public class ForwardTool {
             });
     }
 }
-
-
