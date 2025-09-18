@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: mcp-forwarder
+  main:
+    banner-mode: "console"
+
+logging:
+  level:
+    root: INFO
+    com.example.mcp: DEBUG
+
+downstream:
+  base-url: "http://localhost:9000" # 请替换为真实下游服务地址
+  path: "/query"
+  api-key: "${DOWNSTREAM_API_KEY:}"
+  api-key-header: "Authorization"
