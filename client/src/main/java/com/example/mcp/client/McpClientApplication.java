@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 public class McpClientApplication {
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(McpClientApplication.class);
-        app.setWebApplicationType(WebApplicationType.NONE);
+        app.setWebApplicationType(WebApplicationType.SERVLET);
         app.run(args);
     }
 }
