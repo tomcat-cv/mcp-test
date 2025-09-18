@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: mcp-client
+  main:
+    banner-mode: "console"
+  ai:
+    mcp:
+      server:
+        enabled: false
+      client:
+        enabled: true
+        name: webflux-mcp-client
+        version: 1.0.0
+        type: ASYNC
+        request-timeout: 20s
+        toolcallback:
+          enabled: true
+        sse:
+          connections:
+            local:
+              url: http://localhost:8080
+              sse-endpoint: /sse
+
+logging:
+  level:
+    root: INFO
+    com.example.mcp: DEBUG
+

@@ -31,7 +31,7 @@ dependencies {
 }
 
 bootJar {
-    mainClass = 'com.example.mcp.mcp.McpServerApplication'
+    mainClass = 'com.example.mcp.server.McpServerApplication'
 }
 
 tasks.withType(Test) {
