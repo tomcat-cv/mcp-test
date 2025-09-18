@@ -15,7 +15,19 @@ public class ForwardTool {
 
     @Tool(name = "forward_query", description = "将标准化输入转发到下游HTTP服务")
     public Mono<StandardQueryResponse> forward(StandardQueryRequest request) {
-        return forwardService.forward(request);
+        System.out.println("[ForwardTool] 收到请求: query='" + request.getQuery() + "', locale='" + request.getLocale() + "'");
+        return forwardService.forward(request)
+            .doOnSuccess(resp -> {
+                if (resp != null) {
+                    System.out.println("[ForwardTool] 返回响应: success=" + resp.isSuccess() + ", message='" + resp.getMessage() + "'");
+                } else {
+                    System.err.println("[ForwardTool] 返回空响应");
+                }
+            })
+            .doOnError(ex -> {
+                System.err.println("[ForwardTool] 处理失败: " + ex.getMessage());
+                ex.printStackTrace();
+            });
     }
 }
 
