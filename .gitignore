@@ -1,4 +1,16 @@
 # Ignore local Gradle cache and metadata
 .gradle/
-
-
+*.class
+*.jar
+build/
+.vscode/
+.idea/
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.development
+.env.test
+.env.production
