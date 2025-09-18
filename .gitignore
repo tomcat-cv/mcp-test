@@ -1,0 +1,4 @@
+# Ignore local Gradle cache and metadata
+.gradle/
+
+
