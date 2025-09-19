@@ -17,13 +17,13 @@ public class ForwardTool {
         this.forwardService = forwardService;
     }
 
-    @Tool(name = "forward_query_stream", description = "以SSE流式返回标准化转发的过程事件")
+    @Tool(name = "forward_query_stream", description = "将标准化输入转发到下游并返回流式事件")
     public Flux<StandardQueryResponse> forwardStream(StandardQueryRequest request) {
-        System.out.println("[ForwardTool] 收到流式请求: query='" + request.getQuery() + "', locale='" + request.getLocale() + "'");
+        System.out.println("[ForwardTool] 收到流式请求: request='" + request + "'");
         return forwardService.forwardStream(request)
-            .doOnError(ex -> {
-                System.err.println("[ForwardTool] 流式处理失败: " + ex.getMessage());
-                ex.printStackTrace();
-            });
+                .doOnError(ex -> {
+                    System.err.println("[ForwardTool] 流式处理失败: " + ex.getMessage());
+                    ex.printStackTrace();
+                });
     }
 }

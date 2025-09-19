@@ -2,29 +2,38 @@ package com.example.mcp.model;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.util.Map;
 
 public class StandardQueryRequest {
 	@NotBlank
-	private String query;
+	private String seqNo;
 
 	@NotBlank
-	private String locale = "zh-CN";
-
-	private Map<String, Object> metadata;
+	private String systemCode;
 
 	@NotNull
 	private Long timestamp;
 
-	public String getQuery() { return query; }
-	public void setQuery(String query) { this.query = query; }
+	public String getSeqNo() {
+		return seqNo;
+	}
 
-	public String getLocale() { return locale; }
-	public void setLocale(String locale) { this.locale = locale; }
+	public void setSeqNo(String seqNo) {
+		this.seqNo = seqNo;
+	}
 
-	public Map<String, Object> getMetadata() { return metadata; }
-	public void setMetadata(Map<String, Object> metadata) { this.metadata = metadata; }
+	public String getSystemCode() {
+		return systemCode;
+	}
 
-	public Long getTimestamp() { return timestamp; }
-	public void setTimestamp(Long timestamp) { this.timestamp = timestamp; }
+	public void setSystemCode(String systemCode) {
+		this.systemCode = systemCode;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
+	}
 }

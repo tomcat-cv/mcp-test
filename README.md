@@ -1,9 +1,9 @@
 # MCP Forwarder (Java 21 + Spring Boot, Multi-Module)
 
-一个可独立部署的 MCP 转发系统，已拆分为三个模块：
-- `common`：共享模型（DTO）。
-- `server`：MCP Server（基于 Spring WebFlux + Spring AI MCP Server WebFlux，SSE `/sse`）。
-- `client`：MCP Client（基于 Spring AI MCP Client WebFlux，可通过 SSE 连接 `server`）。
+一个可独立部署的 MCP 转发系统，支持流式处理和 AI 集成，已拆分为三个模块：
+- `common`：共享模型（DTO），包含标准化的请求/响应结构。
+- `server`：MCP Server（基于 Spring WebFlux + Spring AI MCP Server WebFlux，提供流式 SSE 端点 `/sse`）。
+- `client`：MCP Client（基于 Spring AI MCP Client WebFlux，集成 DeepSeek API，提供 REST API 接口）。
 
 ## 运行环境
 - Java 21
@@ -26,20 +26,24 @@
 java -jar server/build/libs/server-0.1.0.jar
 ```
 - 入口类：`com.example.mcp.server.McpServerApplication`
-- 暴露 SSE 端点：`/sse`（见 `server/src/main/resources/application.yml`）
+- 暴露 SSE 端点：`/sse`（流式 MCP 工具调用）
+- 端口：8080（默认）
 
 ### 启动 Client（作为 MCP Client 连接 Server）
 ```bash
 java -jar client/build/libs/client-0.1.0.jar
 ```
 - 入口类：`com.example.mcp.client.McpClientApplication`
-- 健康检查：`GET /client/mcp/health`
+- 端口：8081（默认）
+- REST API 端点：
+  - `POST /api/mcp/query` - 查询接口（集成 DeepSeek AI）
+  - `GET /api/mcp/health` - 健康检查
 
-> 说明：本项目采用 Spring AI MCP 的 WebFlux 形态，通过 HTTP SSE 与客户端交互，不再是 STDIO 形态。
+> 说明：本项目采用 Spring AI MCP 的 WebFlux 形态，通过 HTTP SSE 与客户端交互，支持流式处理。Client 集成了 DeepSeek API 提供 AI 能力。
 
 ## 配置
 
-### Server 配置（`server/src/main/resources/application.yml`）
+### Server 配置（`server/src/main/resources/application.properties`）
 - `spring.ai.mcp.server.*`：MCP Server 基本信息与 SSE 端点（默认 `/sse`）。
 - `downstream.*`：下游 HTTP 服务配置（支持环境变量覆盖）。
   - `downstream.base-url`：下游基础地址（默认 `http://localhost:9000`）。
@@ -47,32 +51,141 @@ java -jar client/build/libs/client-0.1.0.jar
   - `downstream.api-key`：下游鉴权密钥（可选，支持 `DOWNSTREAM_API_KEY`）。
   - `downstream.api-key-header`：密钥请求头名称（默认 `Authorization`）。
 
-### Client 配置（`client/src/main/resources/application.yml` 或 `application.properties`）
+### Client 配置（`client/src/main/resources/application.properties`）
 - `spring.ai.mcp.client.*`：MCP Client 配置。
-- 示例（连接本地 Server）：
+- `spring.ai.deepseek.*`：DeepSeek AI API 配置。
+  - `spring.ai.deepseek.api-key`：DeepSeek API 密钥（必需）。
+  - `spring.ai.deepseek.base-url`：API 基础地址（默认 `https://api.deepseek.com/`）。
+  - `spring.ai.deepseek.chat.options.model`：使用的模型（默认 `deepseek-chat`）。
+- SSE 连接配置：
   - `spring.ai.mcp.client.sse.connections.local.url=http://localhost:8080`
   - `spring.ai.mcp.client.sse.connections.local.sse-endpoint=/sse`
+- `server.port`：客户端服务端口（默认 8081）。
 
-## 下游接口期望（Server -> 下游）
-- 请求映射：
-  - `q` <- `query`
-  - `lang` <- `locale`
-  - `extra` <- `metadata`
-  - `ts` <- `timestamp`
-- 响应示例：
+## API 接口说明
+
+### Client REST API
+
+#### 查询接口
+- **端点**：`POST /api/mcp/query`
+- **请求体**：
 ```json
-{"status":"ok","message":"ok","data":{"answer":"晴"}}
+{
+  "query": "你的问题"
+}
+```
+- **响应体**：
+```json
+{
+  "success": true,
+  "message": "查询成功",
+  "result": "AI 回复内容"
+}
+```
+
+#### 健康检查
+- **端点**：`GET /api/mcp/health`
+- **响应**：`"MCP Client is running"`
+
+### Server MCP 工具
+
+#### 流式查询工具
+- **工具名**：`forward_query_stream`
+- **描述**：将标准化输入转发到下游并返回流式事件
+- **输入**：`StandardQueryRequest`
+- **输出**：`Flux<StandardQueryResponse>`（流式响应）
+
+### 数据模型
+
+#### StandardQueryRequest
+```java
+{
+  "seqNo": "序列号",
+  "systemCode": "系统代码", 
+  "timestamp": 1234567890
+}
+```
+
+#### StandardQueryResponse
+```java
+{
+  "success": true,
+  "message": "处理状态信息",
+  "result": {
+    "downstreamRequestReal": {...},
+    "progress": 100
+  }
+}
+```
+
+#### DownstreamRequest
+```java
+{
+  "seqNo": "序列号",
+  "systemCode": "系统代码"
+}
+```
+
+#### DownstreamResponse
+```java
+{
+  "status": "ok",
+  "message": "处理结果",
+  "data": {...}
+}
 ```
 
 ## 模块说明
 - `common`：
   - 数据模型：`StandardQueryRequest`、`StandardQueryResponse`、`DownstreamRequest`、`DownstreamResponse`。
+  - 提供标准化的请求/响应结构，支持流式处理。
 - `server`：
   - 入口：`com.example.mcp.server.McpServerApplication`
-  - 工具：`ForwardTool#forward`（工具名 `forward_query`），调用 `ForwardService` 转发到下游。
+  - 工具：`ForwardTool#forwardStream`（工具名 `forward_query_stream`），支持流式响应。
+  - 服务：`ForwardService` 提供流式处理逻辑，模拟分段事件推送。
   - 配置：`DownstreamProperties`、`WebClientConfig`。
 - `client`：
   - 入口：`com.example.mcp.client.McpClientApplication`
-  - 探针：`McpClientProbeController`（`/client/mcp/health`）。
+  - 控制器：`McpController` 提供 REST API 接口。
+  - 集成：DeepSeek AI API，提供智能问答能力。
 
-> 字段与协议映射可按需调整，以对齐你的下游接口与业务语义。
+## 使用示例
+
+### 1. 启动服务
+```bash
+# 启动 Server（端口 8080）
+java -jar server/build/libs/server-0.1.0.jar
+
+# 启动 Client（端口 8081）
+java -jar client/build/libs/client-0.1.0.jar
+```
+
+### 2. 测试 Client API
+```bash
+# 健康检查
+curl http://localhost:8081/api/mcp/health
+
+# 查询接口
+curl -X POST http://localhost:8081/api/mcp/query \
+  -H "Content-Type: application/json" \
+  -d '{"query": "你好，请介绍一下自己"}'
+```
+
+### 3. 测试 Server 流式工具
+通过 MCP 客户端连接到 `http://localhost:8080/sse`，调用 `forward_query_stream` 工具：
+```json
+{
+  "seqNo": "test-001",
+  "systemCode": "TEST_SYSTEM",
+  "timestamp": 1703123456789
+}
+```
+
+### 4. 配置 DeepSeek API
+在 `client/src/main/resources/application.properties` 中配置：
+```properties
+spring.ai.deepseek.api-key=your-deepseek-api-key
+spring.ai.deepseek.chat.options.model=deepseek-chat
+```
+
+> 注意：确保已获取有效的 DeepSeek API 密钥，并正确配置相关参数。
