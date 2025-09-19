@@ -15,6 +15,11 @@ public class QueryResponse {
     
     public QueryResponse() {}
     
+    public QueryResponse(boolean success, String message) {
+        this.success = success;
+        this.message = message;
+    }
+
     public QueryResponse(boolean success, String message, String result) {
         this.success = success;
         this.message = message;

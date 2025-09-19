@@ -2,6 +2,8 @@ package com.example.mcp.client.controller;
 
 import com.example.mcp.client.model.QueryRequest;
 import com.example.mcp.client.model.QueryResponse;
+import com.example.mcp.model.StandardQueryResponse;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +21,14 @@ public class McpController {
         try {
             System.out.println("请求: " + request.getQuery());
 
-            String reply = chatClient.prompt(request.getQuery()).call().content();
-            System.out.println("回复: " + reply);
+            StandardQueryResponse standardQueryResponse = chatClient.prompt(request.getQuery()).call().entity(StandardQueryResponse.class);
+            System.out.println("回复: " + standardQueryResponse);
 
-            return ResponseEntity.ok(new QueryResponse(true, "查询成功", reply));
+            if (standardQueryResponse != null) {
+                return ResponseEntity.ok(new QueryResponse(true, "查询成功", standardQueryResponse.getMessage()));
+            } else {
+                return ResponseEntity.ok(new QueryResponse(false, "查询失败"));
+            }
         } catch (Exception e) {
             System.err.println("查询失败: " + e.getMessage());
             e.printStackTrace();

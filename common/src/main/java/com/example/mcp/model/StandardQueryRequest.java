@@ -36,4 +36,9 @@ public class StandardQueryRequest {
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
+
+	@Override
+	public String toString() {
+		return "StandardQueryRequest [seqNo=" + seqNo + ", systemCode=" + systemCode + ", timestamp=" + timestamp + "]";
+	}
 }

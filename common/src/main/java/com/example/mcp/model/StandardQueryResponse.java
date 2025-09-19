@@ -30,4 +30,9 @@ public class StandardQueryResponse {
 	public void setResult(Map<String, Object> result) {
 		this.result = result;
 	}
+
+	@Override
+	public String toString() {
+		return "StandardQueryResponse [success=" + success + ", message=" + message + ", result=" + result + "]";
+	}
 }
