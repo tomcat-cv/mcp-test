@@ -54,7 +54,7 @@ java -jar client/build/libs/client-0.1.0.jar
 ### Client 配置（`client/src/main/resources/application.properties`）
 - `spring.ai.mcp.client.*`：MCP Client 配置。
 - `spring.ai.deepseek.*`：DeepSeek AI API 配置。
-  - `spring.ai.deepseek.api-key`：DeepSeek API 密钥（必需）。
+  - `spring.ai.deepseek.api-key`：DeepSeek API 密钥（必需，支持环境变量 `${DEEPSEEK_API_KEY}`）。
   - `spring.ai.deepseek.base-url`：API 基础地址（默认 `https://api.deepseek.com/`）。
   - `spring.ai.deepseek.chat.options.model`：使用的模型（默认 `deepseek-chat`）。
 - SSE 连接配置：
@@ -181,11 +181,52 @@ curl -X POST http://localhost:8081/api/mcp/query \
 }
 ```
 
-### 4. 配置 DeepSeek API
+### 4. 配置 API 密钥
+
+#### 方法一：使用环境变量（推荐）
+1. 复制环境变量模板文件：
+```bash
+cp .env.example .env
+```
+
+2. 编辑 `.env` 文件，填入您的实际API密钥：
+```bash
+# DeepSeek API配置
+DEEPSEEK_API_KEY=sk-your-actual-deepseek-api-key-here
+
+# 下游服务API密钥（可选）
+DOWNSTREAM_API_KEY=your-downstream-api-key-here
+```
+
+3. 启动应用时加载环境变量：
+```bash
+# 启动 Server
+java -jar server/build/libs/server-0.1.0.jar
+
+# 启动 Client
+java -jar client/build/libs/client-0.1.0.jar
+```
+
+#### 方法二：直接设置环境变量
+```bash
+# 设置 DeepSeek API 密钥
+export DEEPSEEK_API_KEY=sk-your-actual-deepseek-api-key-here
+
+# 设置下游服务API密钥（可选）
+export DOWNSTREAM_API_KEY=your-downstream-api-key-here
+
+# 启动应用
+java -jar client/build/libs/client-0.1.0.jar
+```
+
+#### 方法三：在配置文件中直接配置（不推荐）
 在 `client/src/main/resources/application.properties` 中配置：
 ```properties
 spring.ai.deepseek.api-key=your-deepseek-api-key
 spring.ai.deepseek.chat.options.model=deepseek-chat
 ```
 
-> 注意：确保已获取有效的 DeepSeek API 密钥，并正确配置相关参数。
+> **安全提示**：
+> - 强烈推荐使用方法一或方法二，避免将API密钥直接写入代码仓库
+> - `.env` 文件已被添加到 `.gitignore` 中，不会被提交到Git仓库
+> - 请妥善保管您的API密钥，不要分享给他人
