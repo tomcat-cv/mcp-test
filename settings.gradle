@@ -2,5 +2,5 @@ rootProject.name = "mcp-forwarder"
 
 include(":common")
 include(":server")
-include(":client")
-include(":client2")
+include(":client-spring-ai")
+include(":client-sdk")
