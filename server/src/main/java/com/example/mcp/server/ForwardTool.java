@@ -7,6 +7,8 @@ import com.example.mcp.model.StandardQueryRequest;
 import com.example.mcp.model.StandardQueryResponse;
 import com.example.mcp.service.ForwardService;
 
+import reactor.core.publisher.Mono;
+
 
 @Service
 public class ForwardTool {
@@ -17,7 +19,7 @@ public class ForwardTool {
     }
 
     @Tool(name = "forward_query", description = "将标准化输入转发到下游并返回处理结果")
-    public StandardQueryResponse forwardQuery(StandardQueryRequest request) {
+    public Mono<StandardQueryResponse> forwardQuery(StandardQueryRequest request) {
         System.out.println("[ForwardTool] 收到请求: request='" + request + "'");
         try {
             return forwardService.forwardQuery(request);

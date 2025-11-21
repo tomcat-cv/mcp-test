@@ -15,7 +15,7 @@ import com.example.mcp.service.ForwardService;
 public class McpServerApplication {
     public static void main(String[] args) throws Exception {
         SpringApplication app = new SpringApplication(McpServerApplication.class);
-        app.setWebApplicationType(WebApplicationType.SERVLET);
+        app.setWebApplicationType(WebApplicationType.REACTIVE);
         app.run(args);
     }
 
